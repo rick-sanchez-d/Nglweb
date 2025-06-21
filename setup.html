@@ -3,26 +3,112 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Setup Profile</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>🎮 Setup Profile</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0d0d0d;
+      color: #33ff33;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .setup-container {
+      background: #111;
+      border: 2px solid #33ff33;
+      padding: 30px;
+      width: 90%;
+      max-width: 420px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 15px #33ff33;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    input[type="text"] {
+      background: #000;
+      border: 1px solid #33ff33;
+      color: #33ff33;
+      padding: 10px;
+      border-radius: 4px;
+      width: 100%;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    input[type="file"] {
+      margin-bottom: 12px;
+      color: #33ff33;
+    }
+
+    .preview {
+      display: none;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #33ff33;
+      margin: 15px auto;
+      box-shadow: 0 0 10px #33ff33;
+    }
+
+    button {
+      background: #33ff33;
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #00cc00;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+  </style>
 </head>
 <body>
   <div class="setup-container">
     <h2>Set Up Your Profile</h2>
-    <input type="text" id="username" placeholder="Enter a username" required />
+
+    <input type="text" id="username" placeholder="Enter your username" required />
+
     <input type="file" id="profilePic" accept="image/*" required />
-    <br />
-    <img id="preview" class="preview" style="display: none" />
-    <br />
+
+    <img id="preview" class="preview" />
+
     <button onclick="uploadAndSave()">Save Profile</button>
+
+    <div id="status" class="status"></div>
   </div>
 
   <script>
-    const cloudName = 'dlpbn2jrp'; // your Cloudinary cloud name
-    const uploadPreset = 'ml_default'; // or 'user_uploads' if you created it
+    const cloudName = 'dlpbn2jrp';
+    const uploadPreset = 'ml_default';
 
     const preview = document.getElementById('preview');
     const fileInput = document.getElementById('profilePic');
+    const statusBox = document.getElementById('status');
 
     fileInput.addEventListener('change', () => {
       const file = fileInput.files[0];
@@ -33,51 +119,47 @@
     });
 
     async function uploadAndSave() {
-      const username = document.getElementById('username').value;
+      const username = document.getElementById('username').value.trim();
       const file = fileInput.files[0];
 
       if (!username || !file) {
-        return alert("Please enter a username and select a picture.");
+        return alert("👾 Enter username and choose a photo.");
       }
 
+      statusBox.innerText = "📡 Uploading photo...";
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', uploadPreset);
 
       try {
-        // Upload image to Cloudinary
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
           method: 'POST',
           body: formData
         });
 
-        const data = await res.json();
-
-        if (!data.secure_url) {
-          return alert("Image upload failed. Try another image.");
-        }
+        const data = await uploadRes.json();
+        if (!data.secure_url) throw new Error("Upload failed");
 
         const imageUrl = data.secure_url;
 
-        // Send username + image URL to your backend
+        statusBox.innerText = "📁 Saving to server...";
         const saveRes = await fetch('/setup-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, imageUrl })
         });
 
-        const result = await saveRes.json();
-
-        if (result.success) {
-          alert("✅ Profile created successfully!");
-          window.location.href = '/dashboard.html';
+        const saveData = await saveRes.json();
+        if (saveData.success) {
+          statusBox.innerText = "✅ Profile created! Redirecting...";
+          setTimeout(() => window.location.href = '/dashboard.html', 1500);
         } else {
-          alert(result.error || "Something went wrong while saving your profile.");
+          statusBox.innerText = "❌ " + (saveData.error || "Something went wrong.");
         }
 
       } catch (err) {
-        console.error('Error:', err);
-        alert("Upload failed. Try again.");
+        console.error(err);
+        statusBox.innerText = "❌ Upload or save failed.";
       }
     }
   </script>
