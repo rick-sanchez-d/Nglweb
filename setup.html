@@ -1,63 +1,25 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Setup Profile</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .setup-container {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: center;
-      max-width: 400px;
-      width: 100%;
-    }
-    input[type="text"], input[type="file"] {
-      width: 90%;
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    img.preview {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      margin-top: 10px;
-      object-fit: cover;
-    }
-  </style>
+  <link rel="stylesheet" href="styl.css" />
 </head>
 <body>
   <div class="setup-container">
     <h2>Set Up Your Profile</h2>
-    <input type="text" id="username" placeholder="Enter a username" required>
-    <input type="file" id="profilePic" accept="image/*" required>
-    <br>
-    <img id="preview" class="preview" style="display:none">
-    <br>
+    <input type="text" id="username" placeholder="Enter a username" required />
+    <input type="file" id="profilePic" accept="image/*" required />
+    <br />
+    <img id="preview" class="preview" style="display: none" />
+    <br />
     <button onclick="uploadAndSave()">Save Profile</button>
-  </div>  <script>
-    const cloudName = 'dlpbn2jrp';
-    const uploadPreset = 'ml_default'; // or your custom unsigned preset name
+  </div>
+
+  <script>
+    const cloudName = 'dlpbn2jrp'; // your Cloudinary cloud name
+    const uploadPreset = 'ml_default'; // or 'user_uploads' if you created it
 
     const preview = document.getElementById('preview');
     const fileInput = document.getElementById('profilePic');
@@ -74,22 +36,30 @@
       const username = document.getElementById('username').value;
       const file = fileInput.files[0];
 
-      if (!username || !file) return alert("Please enter username and choose a picture.");
+      if (!username || !file) {
+        return alert("Please enter a username and select a picture.");
+      }
 
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', uploadPreset);
 
       try {
-        // Upload to Cloudinary
+        // Upload image to Cloudinary
         const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
           method: 'POST',
           body: formData
         });
+
         const data = await res.json();
+
+        if (!data.secure_url) {
+          return alert("Image upload failed. Try another image.");
+        }
+
         const imageUrl = data.secure_url;
 
-        // Send to your backend
+        // Send username + image URL to your backend
         const saveRes = await fetch('/setup-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -97,16 +67,19 @@
         });
 
         const result = await saveRes.json();
+
         if (result.success) {
-          alert("Profile saved!");
+          alert("✅ Profile created successfully!");
           window.location.href = '/dashboard.html';
         } else {
-          alert(result.error || "Something went wrong");
+          alert(result.error || "Something went wrong while saving your profile.");
         }
+
       } catch (err) {
-        console.error(err);
+        console.error('Error:', err);
         alert("Upload failed. Try again.");
       }
     }
-  </script></body>
+  </script>
+</body>
 </html>
