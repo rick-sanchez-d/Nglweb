@@ -1,52 +1,63 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const { Pool } = require('pg');
+const dotenv = require('dotenv');
+dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve HTML, CSS, JS
 app.use(express.static(__dirname));
 app.use(express.json());
 
-const USERS_FILE = path.join(__dirname, 'users.json');
+// Connect to PostgreSQL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false } // Required for Render SSL
+});
 
-function getUsers() {
-  if (!fs.existsSync(USERS_FILE)) return [];
-  const data = fs.readFileSync(USERS_FILE, 'utf8');
-  return JSON.parse(data || '[]');
-}
+// === Ensure table exists ===
+const createTable = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL
+    );
+  `);
+};
+createTable();
 
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
-
-// Signup route
-app.post('/signup', (req, res) => {
+// === SIGNUP ===
+app.post('/signup', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Missing fields' });
 
-  const users = getUsers();
-  if (users.find(u => u.username === username)) {
-    return res.status(400).json({ error: 'User already exists' });
+  try {
+    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, password]);
+    res.json({ success: true });
+  } catch (err) {
+    if (err.code === '23505') {
+      res.status(400).json({ error: 'User already exists' });
+    } else {
+      console.error(err);
+      res.status(500).json({ error: 'Database error' });
+    }
   }
-
-  users.push({ username, password });
-  saveUsers(users);
-  return res.json({ success: true });
 });
 
-// Login route
-app.post('/login', (req, res) => {
+// === LOGIN ===
+app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const users = getUsers();
-
-  const found = users.find(u => u.username === username && u.password === password);
-  if (!found) return res.status(401).json({ error: 'Invalid login' });
-
-  return res.json({ success: true });
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE username=$1 AND password=$2', [username, password]);
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid login' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
