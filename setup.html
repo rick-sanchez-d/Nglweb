@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🎮 Setup Profile</title>
+  <title>Set Up Profile</title>
   <style>
     * {
       box-sizing: border-box;
@@ -12,9 +12,8 @@
     body {
       margin: 0;
       padding: 0;
-      background: #0d0d0d;
-      color: #33ff33;
-      font-family: 'Courier New', monospace;
+      background: #fff0f5;
+      font-family: 'Segoe UI', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -22,68 +21,88 @@
     }
 
     .setup-container {
-      background: #111;
-      border: 2px solid #33ff33;
+      background: #fff;
       padding: 30px;
+      border-radius: 18px;
       width: 90%;
-      max-width: 420px;
-      border-radius: 12px;
+      max-width: 400px;
+      box-shadow: 0 8px 25px rgba(255, 105, 180, 0.2);
       text-align: center;
-      box-shadow: 0 0 15px #33ff33;
+      border: 2px solid #ffc0cb;
     }
 
     h2 {
       margin-bottom: 20px;
-      font-size: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      color: #e91e63;
+      font-weight: 600;
     }
 
-    input[type="text"] {
-      background: #000;
-      border: 1px solid #33ff33;
-      color: #33ff33;
-      padding: 10px;
-      border-radius: 4px;
-      width: 100%;
-      margin-bottom: 15px;
+    .pfp-preview {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ff69b4;
+      box-shadow: 0 0 10px rgba(255, 105, 180, 0.4);
+      margin: 15px auto 10px;
+      display: none;
+      transition: transform 0.3s ease;
+    }
+
+    .pfp-preview:hover {
+      transform: scale(1.06);
+    }
+
+    .file-label {
+      background: #ff69b4;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 30px;
       font-size: 14px;
+      cursor: pointer;
+      display: inline-block;
+      margin-bottom: 15px;
+      transition: background 0.2s ease;
+    }
+
+    .file-label:hover {
+      background: #ff85c1;
     }
 
     input[type="file"] {
-      margin-bottom: 12px;
-      color: #33ff33;
+      display: none;
     }
 
-    .preview {
-      display: none;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #33ff33;
-      margin: 15px auto;
-      box-shadow: 0 0 10px #33ff33;
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ffc0cb;
+      margin-top: 10px;
+      font-size: 14px;
     }
 
     button {
-      background: #33ff33;
-      color: #000;
+      margin-top: 20px;
+      background-color: #ff69b4;
+      color: white;
+      padding: 12px;
+      width: 100%;
       border: none;
-      padding: 12px 20px;
-      border-radius: 5px;
-      font-weight: bold;
+      border-radius: 8px;
+      font-size: 16px;
       cursor: pointer;
-      transition: background 0.3s ease;
+      font-weight: 600;
     }
 
     button:hover {
-      background: #00cc00;
+      background-color: #ff85c1;
     }
 
     .status {
-      margin-top: 10px;
-      font-size: 13px;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #999;
     }
   </style>
 </head>
@@ -91,11 +110,12 @@
   <div class="setup-container">
     <h2>Set Up Your Profile</h2>
 
-    <input type="text" id="username" placeholder="Enter your username" required />
+    <img id="preview" class="pfp-preview" />
 
-    <input type="file" id="profilePic" accept="image/*" required />
+    <label for="profilePic" class="file-label">📸 Choose Profile Photo</label>
+    <input type="file" id="profilePic" accept="image/*" />
 
-    <img id="preview" class="preview" />
+    <input type="text" id="username" placeholder="Enter username" required />
 
     <button onclick="uploadAndSave()">Save Profile</button>
 
@@ -123,10 +143,11 @@
       const file = fileInput.files[0];
 
       if (!username || !file) {
-        return alert("👾 Enter username and choose a photo.");
+        return alert("Please enter your username and select a photo.");
       }
 
-      statusBox.innerText = "📡 Uploading photo...";
+      statusBox.innerText = "Uploading photo...";
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', uploadPreset);
@@ -142,7 +163,7 @@
 
         const imageUrl = data.secure_url;
 
-        statusBox.innerText = "📁 Saving to server...";
+        statusBox.innerText = "Saving profile...";
         const saveRes = await fetch('/setup-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -159,7 +180,7 @@
 
       } catch (err) {
         console.error(err);
-        statusBox.innerText = "❌ Upload or save failed.";
+        statusBox.innerText = "❌ Upload failed. Try another photo.";
       }
     }
   </script>
