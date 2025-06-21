@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #eef4fb;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .dashboard {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header button {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #007bff;
+    }
+
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #007bff;
+      box-shadow: 0 0 12px rgba(0, 123, 255, 0.4);
+      margin-bottom: 15px;
+    }
+
+    .username {
+      font-size: 24px;
+      font-weight: bold;
+      color: #0056b3;
+      margin-bottom: 20px;
+    }
+
+    .logout-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .logout-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <div class="header">
+      <button onclick="showNotifications()">🔔</button>
+      <button onclick="openSettings()">⚙️</button>
+    </div>
+
+    <img id="userPic" class="profile-pic" src="" alt="Profile" />
+    <div id="userName" class="username">Loading...</div>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    async function loadUser() {
+      try {
+        const res = await fetch('/get-profile');
+        const data = await res.json();
+
+        if (!data || !data.username || !data.profile_pic_url) {
+          return alert("User not found. Please log in again.");
+        }
+
+        document.getElementById("userPic").src = data.profile_pic_url;
+        document.getElementById("userName").innerText = data.username;
+      } catch (err) {
+        alert("Error loading profile.");
+        console.error(err);
+      }
+    }
+
+    function logout() {
+      fetch('/logout', { method: 'POST' })
+        .then(() => window.location.href = '/login.html');
+    }
+
+    function showNotifications() {
+      alert("🔔 No new notifications yet.");
+    }
+
+    function openSettings() {
+      alert("⚙️ Settings coming soon.");
+    }
+
+    loadUser();
+  </script>
+</body>
+</html>
