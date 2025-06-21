@@ -34,7 +34,9 @@
       if (data.success) {
         message.style.color = 'green';
         message.textContent = 'Signup successful! Now login.';
-        setTimeout(() => window.location.href = 'login.html', 2000);
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
       } else {
         message.style.color = 'red';
         message.textContent = data.error;
