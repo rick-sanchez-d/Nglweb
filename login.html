@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <form id="loginForm">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+    <p id="message"></p>
+    <a href="signup.html">Don't have an account? Sign up</a>
+  </form>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const message = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = form.username.value.trim();
+      const password = form.password.value;
+
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        message.style.color = 'green';
+        message.textContent = 'Login successful! Redirecting...';
+        setTimeout(() => {
+          window.location.href = 'dashboard.html'; // Next page (you can change this)
+        }, 2000);
+      } else {
+        message.style.color = 'red';
+        message.textContent = data.error;
+      }
+    });
+  </script>
+</body>
+</html>
