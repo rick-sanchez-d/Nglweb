@@ -1,4 +1,3 @@
-/* Reset and base style */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -12,6 +11,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
 }
 
 /* Form container */
@@ -20,8 +20,8 @@ form {
   padding: 40px;
   border-radius: 15px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 350px;
+  width: 100%;
+  max-width: 500px; /* wider for larger screens */
   text-align: center;
 }
 
@@ -34,7 +34,7 @@ h2 {
 /* Input fields */
 input {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   margin: 10px 0;
   border: none;
   border-radius: 8px;
@@ -47,7 +47,7 @@ button {
   background: #4e54c8;
   color: white;
   border: none;
-  padding: 12px;
+  padding: 14px;
   width: 100%;
   border-radius: 8px;
   cursor: pointer;
@@ -69,11 +69,19 @@ button:hover {
 a {
   display: block;
   margin-top: 15px;
-  color: #fff;
+  color: #4e54c8;
   text-decoration: none;
   font-size: 14px;
 }
 
 a:hover {
   text-decoration: underline;
+}
+
+/* Make inputs/text larger on very small screens */
+@media (max-width: 400px) {
+  input, button {
+    font-size: 18px;
+    padding: 16px;
+  }
 }
